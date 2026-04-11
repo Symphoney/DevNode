@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 	}
 	else if (state == "thinking")
 	{
-		blinkColor(true, false, true, 10, 250); // purpleish
+		blinkColor(true, false, true, 5, 250); // purpleish
 		std::cout << "Pet: THINKING" << '\n';
 	}
 	else if (state == "off")
