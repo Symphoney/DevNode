@@ -30,4 +30,13 @@ To note, there is an end goal with this project and it's not just practicing sma
 - Supports pet-like states like happy, idle, alert, thinking, and error
 - Intended for future project feedback layer for incoming project interface
 
+### Behavior Loop (Python + C++)
+- Python monitoring loop reads mem usage
+- Uses 'MemAvailable' for accurate RAM state calculation
+- Tracks prev LED state to avoid unnecessary hardware updates
+- Intro to transitional states like 'thinking' before switching into a more active state
 
+Goals after this:
+- Refactor code a bit to clean up the parts and polish repo
+- Make a manual command interface in Python for reusability and to clean up the hardcoding
+- Decide and start using one of the other hardware pieces from the arduino kit
