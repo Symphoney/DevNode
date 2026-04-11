@@ -24,3 +24,10 @@ To note, there is an end goal with this project and it's not just practicing sma
 - Updates every 2 seconds
 
 (During this process, I also learned of the linux command - mv - to move files from folders)
+
+### Pet State Controller (C++)
+- Added basic command-based RGB LED state controller with arguments in main!
+- Supports pet-like states like happy, idle, alert, thinking, and error
+- Intended for future project feedback layer for incoming project interface
+
+
