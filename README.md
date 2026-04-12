@@ -34,9 +34,14 @@ To note, there is an end goal with this project and it's not just practicing sma
 - Python monitoring loop reads mem usage
 - Uses 'MemAvailable' for accurate RAM state calculation
 - Tracks prev LED state to avoid unnecessary hardware updates
-- Intro to transitional states like 'thinking' before switching into a more active state
+- Intro to transitional states like 'thinking' before switching into an active state
 
-Goals after this:
-- Refactor code a bit to clean up the parts and polish repo
-- Make a manual command interface in Python for reusability and to clean up the hardcoding
-- Decide and start using one of the other hardware pieces from the arduino kit
+### LCD1602 Display Integration (C++)
+- Integrated LCD1602 display with Raspberry Pi using 4-bit mode
+- Debugged issues relating to 4-bit data pin mapping
+- Configured contrast with 10k potentiometer
+- Successfully displayed static text
+- Comments go into wiring overview
+
+## System Arch
+Python (logic / monitor) -> C++ (hardware control layer) -> GPIO (physical) -> LED (state) + LCD (text)
