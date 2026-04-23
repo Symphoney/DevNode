@@ -52,3 +52,6 @@ Python (logic / monitor) -> C++ (hardware control layer) -> GPIO (physical) -> L
 - Displays RAM usage, uptime, state, and basic face output
 - Uses stable terminal rendering over print redraws
 - Designed as foundation for boot-to-dashboard ui
+- Added bordered layout to dashboard
+- Introduced face section for state visualization and made it animated
+
