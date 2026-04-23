@@ -24,16 +24,45 @@ def get_uptime():
 
 def get_state(used):
 	if used < 150:
-		return "IDLE", "-.-"
+		return "IDLE", ["-.-", "o.o"]
 	elif used < 300:
-		return "THINKING", "o.o"
+		return "THINKING", [".-.", "._."]
 	else:
-		return "ALERT", "x.x"
+		return "ALERT", ["x.x", "!!"]
 
-def draw_centered(stdscr, y, text):
-	height, width = stdscr.getmaxyx()
-	x = max(0, (width - len(text)) // 2)
-	stdscr.addstr(y, x, text)
+def safe_addstr(win, y, x, text, attr=0):
+	height, width = win.getmaxyx()
+	if 0 <= y < height and 0 <= x < width:
+		try:
+			win.addstr(y, x, text[:max(0, width - x - 1)], attr)
+		except curses.error:
+			pass
+
+def draw_box(win, y, x, h, w, title=None):
+	height, width = win.getmaxyx()
+
+	if y < 0 or x < 0 or y + h > height or x + w > width:
+		return
+
+	# corners
+	safe_addstr(win, y, x, "+")
+	safe_addstr(win, y, x + w - 1, "+")
+	safe_addstr(win, y + h - 1, x, "+")
+	safe_addstr(win, y + h - 1, x + w - 1, "+")
+
+	# horizontal
+	for i in range(x + 1, x + w - 1):
+		safe_addstr(win, y, i, "-")
+		safe_addstr(win, y + h - 1, i, "-")
+
+	# vertical
+	for i in range(y + 1, y + h - 1):
+		safe_addstr(win, i, x, "|")
+		safe_addstr(win, i, x + w - 1, "|")
+
+	if title:
+		title_text = " " + title + " "
+		safe_addstr(win, y, x + 2, title_text)
 
 def main(stdscr):
 	curses.curs_set(0)
@@ -42,19 +71,56 @@ def main(stdscr):
 
 	while True:
 		stdscr.erase()
+		height, width = stdscr.getmaxyx()
+
 		used, total = get_mem()
 		uptime = get_uptime()
-		state, face = get_state(used)
+		state, face_frames = get_state(used)
 
-		draw_centered(stdscr, 1, "=== DevNode ===")
-		draw_centered(stdscr, 3, "System Status")
-		draw_centered(stdscr, 4, "---------------")
-		draw_centered(stdscr, 6, "RAM: {} MB / {} MB".format(used, total))
-		draw_centered(stdscr, 7, "Uptime: {}".format(uptime))
-		draw_centered(stdscr, 8, "State: {}".format(state))
-		draw_centered(stdscr, 11, face)
+		frame_index = int(time.time() * 3) % len(face_frames)
+		face = face_frames[frame_index]
 
-		draw_centered(stdscr, 14, "Press q to quit")
+		# min size
+		if height < 20 or width < 50:
+			safe_addstr(stdscr, 0, 0, "Window too small. Resize terminal.")
+			stdscr.refresh()
+			key = stdscr.getch()
+			if key == ord('q'):
+				break
+			time.sleep(1)
+			continue
+
+		panel_w = 50
+		panel_h = 18
+		panel_x = (width - panel_w) // 2
+		panel_y = (height - panel_h) // 2
+
+
+		draw_box(stdscr, panel_y, panel_x, panel_h, panel_w, " DevNode ")
+
+		# title
+		safe_addstr(stdscr, panel_y + 2, panel_x + 3, "System Status")
+
+		# info section
+		safe_addstr(stdscr, panel_y + 4, panel_x + 3, "RAM:    {} MB / {} MB".format(used, total))
+		safe_addstr(stdscr, panel_y + 5, panel_x + 3, "Uptime: {}".format(uptime))
+		safe_addstr(stdscr, panel_y + 6, panel_x + 3, "State:  {}".format(state))
+
+		# face box
+		face_box_y = panel_y + 8
+		face_box_x = panel_x + 3
+		face_box_w = panel_w - 6
+		face_box_h = 5
+
+
+		draw_box(stdscr, face_box_y, face_box_x, face_box_h, face_box_w, " Face ")
+
+		face_x = face_box_x + (face_box_w - len(face)) // 2
+		face_y = face_box_y + face_box_h // 2
+		safe_addstr(stdscr, face_y, face_x, face)
+
+		# footer
+		safe_addstr(stdscr, panel_y + panel_h - 2, panel_x + 3, "Press q to quit")
 
 		stdscr.refresh()
 
