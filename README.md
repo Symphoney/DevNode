@@ -45,3 +45,10 @@ To note, there is an end goal with this project and it's not just practicing sma
 
 ## System Arch
 Python (logic / monitor) -> C++ (hardware control layer) -> GPIO (physical) -> LED (state) + LCD (text)
+
+### Terminal Dashboard UI
+- Created basic terminal dashboard
+- Updated it to a curses-based fullscreen terminal dashboard
+- Displays RAM usage, uptime, state, and basic face output
+- Uses stable terminal rendering over print redraws
+- Designed as foundation for boot-to-dashboard ui
