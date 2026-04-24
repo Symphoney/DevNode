@@ -1,3 +1,4 @@
+from ai_client import ask_ai
 import curses
 import time
 
@@ -64,6 +65,53 @@ def draw_box(win, y, x, h, w, title=None):
 		title_text = " " + title + " "
 		safe_addstr(win, y, x + 2, title_text)
 
+def chat_mode(stdscr):
+	curses.curs_set(1)
+	stdscr.nodelay(False)
+	stdscr.timeout(-1)
+
+	prompt = ""
+	response = "I am your oracle, ask me something. Press q on an empty prompt to return."
+
+	while True:
+		stdscr.erase()
+		height, width = stdscr.getmaxyx()
+
+		draw_box(stdscr, 1, 2, height - 2, width - 4, " Chat Mode ")
+
+		safe_addstr(stdscr, 3, 4, "DevNode AI")
+		safe_addstr(stdscr, 5, 4, "Response:")
+		safe_addstr(stdscr, 6, 4, response[:width - 8])
+
+		safe_addstr(stdscr, height - 5, 4, "Type message. Enter to send.")
+		safe_addstr(stdscr, height - 4, 4, "Empty q -> returns to dashboard.")
+		safe_addstr(stdscr, height - 2, 4, "> " + prompt)
+
+		stdscr.refresh()
+
+		key = stdscr.getch()
+
+		if key == 10 or key == 13:
+			if prompt.strip() != "":
+				response = ask_ai(prompt)
+				prompt = ""
+			continue
+
+		if key == 127 or key == curses.KEY_BACKSPACE:
+			prompt = prompt[:-1]
+			continue
+
+		if prompt == "" and key == ord('q'):
+			break
+
+		if 32 <= key <= 126:
+			if len(prompt) < width - 10:
+				prompt += chr(key)
+
+	curses.curs_set(0)
+	stdscr.nodelay(True)
+	stdscr.timeout(200)
+
 def main(stdscr):
 	curses.curs_set(0)
 	stdscr.nodelay(True)
@@ -120,13 +168,15 @@ def main(stdscr):
 		safe_addstr(stdscr, face_y, face_x, face)
 
 		# footer
-		safe_addstr(stdscr, panel_y + panel_h - 2, panel_x + 3, "Press q to quit")
+		safe_addstr(stdscr, panel_y + panel_h - 2, panel_x + 3, "Press c to chat | q to quit")
 
 		stdscr.refresh()
 
 		key = stdscr.getch()
 		if key == ord('q'):
 			break
+		elif key == ord('c'):
+			chat_mode(stdscr)
 
 		time.sleep(1)
 
