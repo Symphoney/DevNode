@@ -30,8 +30,9 @@ def ask_ai(prompt):
 
 		if "choices" not in result:
 			return "Unexpected resp: " + str(result)
+		text = result["choices"][0]["message"]["content"]
 
-		return result["choices"][0]["message"]["content"]
+		return text[:800]
 
 	except Exception as e:
 		return "Error: " + str(e)

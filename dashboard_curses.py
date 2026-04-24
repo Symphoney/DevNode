@@ -1,6 +1,7 @@
 from ai_client import ask_ai
 import curses
 import time
+import textwrap
 
 def get_mem():
 	with open('/proc/meminfo', 'r') as f:
@@ -65,6 +66,43 @@ def draw_box(win, y, x, h, w, title=None):
 		title_text = " " + title + " "
 		safe_addstr(win, y, x + 2, title_text)
 
+def draw_wrapped_text(stdscr, y, x, label, text, width):
+	prefix = label + ": "
+	available_width = width - len(prefix)
+
+	wrapped = textwrap.wrap(text, available_width)
+
+	if len(wrapped) == 0:
+		return y
+
+	safe_addstr(stdscr, y, x, prefix + wrapped[0])
+	y += 1
+
+	for line in wrapped[1:]:
+		safe_addstr(stdscr, y, x + len(prefix), line)
+		y += 1
+
+	return y
+
+def build_chat_lines(history, width):
+	lines = []
+
+	for speaker, text in history:
+		prefix = speaker + ": "
+		available_width = width - len(prefix)
+
+		wrapped = textwrap.wrap(text, available_width)
+
+		if len(wrapped) == 0:
+			lines.append(prefix)
+		else:
+			lines.append(prefix + wrapped[0])
+			for line in wrapped[1:]:
+				lines.append(" " * len(prefix) + line)
+
+		lines.append("")
+	return lines
+
 def chat_mode(stdscr):
 	history = [] # Keep chat history
 
@@ -83,17 +121,30 @@ def chat_mode(stdscr):
 		draw_box(stdscr, 1, 2, height - 2, width - 4, " Chat Mode ")
 
 		safe_addstr(stdscr, 3, 4, "DevNode AI")
-		safe_addstr(stdscr, 5, 4, "Response:")
+		safe_addstr(stdscr, 5, 4, "Conversation")
+		safe_addstr(stdscr, 6, 5, "------------")
+
+		y = 8
 
 
-		y = 6
-		for speaker, text in history[-5:]:
-			safe_addstr(stdscr, y, 4, "{}: {}".format(speaker, text[:width-10]))
+		chat_x = 4
+		chat_w = width - 10
+		chat_top = 8
+		chat_bottom = height - 6
+		max_lines = chat_bottom - chat_top
+
+		chat_lines = build_chat_lines(history, chat_w)
+		visible_lines = chat_lines[-max_lines:]
+
+		y = chat_top
+
+		for line in visible_lines:
+			safe_addstr(stdscr, y, chat_x, line[:chat_w])
 			y += 1
 
 		safe_addstr(stdscr, height - 5, 4, "Type message. Enter to send.")
 		safe_addstr(stdscr, height - 4, 4, "Empty q -> returns to dashboard.")
-		safe_addstr(stdscr, height - 2, 4, "> " + prompt)
+		safe_addstr(stdscr, height - 2, 4, "> " + prompt[-(width - 8):])
 
 		stdscr.refresh()
 
