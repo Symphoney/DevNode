@@ -66,6 +66,9 @@ def draw_box(win, y, x, h, w, title=None):
 		safe_addstr(win, y, x + 2, title_text)
 
 def chat_mode(stdscr):
+	history = [] # Keep chat history
+
+
 	curses.curs_set(1)
 	stdscr.nodelay(False)
 	stdscr.timeout(-1)
@@ -81,7 +84,12 @@ def chat_mode(stdscr):
 
 		safe_addstr(stdscr, 3, 4, "DevNode AI")
 		safe_addstr(stdscr, 5, 4, "Response:")
-		safe_addstr(stdscr, 6, 4, response[:width - 8])
+
+
+		y = 6
+		for speaker, text in history[-5:]:
+			safe_addstr(stdscr, y, 4, "{}: {}".format(speaker, text[:width-10]))
+			y += 1
 
 		safe_addstr(stdscr, height - 5, 4, "Type message. Enter to send.")
 		safe_addstr(stdscr, height - 4, 4, "Empty q -> returns to dashboard.")
@@ -93,7 +101,20 @@ def chat_mode(stdscr):
 
 		if key == 10 or key == 13:
 			if prompt.strip() != "":
+				history.append(("You", prompt))
+				response = "Contemplating..."
+				stdscr.refresh()
 				response = ask_ai(prompt)
+
+
+				if "error" in response.lower():
+					mood = "ALERT"
+				elif "hello" in prompt.lower():
+					mood = "HAPPY"
+				else:
+					mood = "PONDERING"
+
+				history.append(("AI", response))
 				prompt = ""
 			continue
 
@@ -107,6 +128,9 @@ def chat_mode(stdscr):
 		if 32 <= key <= 126:
 			if len(prompt) < width - 10:
 				prompt += chr(key)
+
+
+
 
 	curses.curs_set(0)
 	stdscr.nodelay(True)
