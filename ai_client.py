@@ -5,9 +5,16 @@ import requests
 API_KEY = os.environ.get("OPENROUTER_API_KEY")
 MODEL = os.environ.get("OPENROUTER_MODEL", "google/gemma-3-12b-it:free")
 
+MODELS = [
+		"google/gemma-3-12b-it:free",
+		"qwen/qwen3-coder:free",
+		"nvidia/nemotron-3-super-120b-a12b:free"
+	]
+
 def ask_ai(prompt):
 	if not API_KEY:
 		return "[No API key identified] " + prompt
+
 
 	url = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -16,23 +23,32 @@ def ask_ai(prompt):
 		"Content-Type": "application/json"
 	}
 
-	data = {
-		"model": "google/gemma-3-12b-it:free",
-		"messages": [{"role": "user", "content": prompt}]
-	}
+	for model in MODELS:
+		data = {
+			"model": model,
+			"messages": [{"role": "user", "content": "Respond briefly in a calm, stealthy, slightly cryptic tone. " + prompt}]
+		}
 
-	try:
-		response = requests.post(url, headers=headers, data=json.dumps(data))
-		result = response.json()
+		try:
+			response = requests.post(url, headers=headers, data=json.dumps(data))
+			result = response.json()
 
-		if "error" in result:
-			return "OpenRouter error: " + str(result["error"])
+			if "error" in result:
+				err = result["error"]
 
-		if "choices" not in result:
-			return "Unexpected resp: " + str(result)
-		text = result["choices"][0]["message"]["content"]
+				if err.get("code") == 429:
+					continue # moving on to next model
 
-		return text[:800]
+				return "Kor intercepted interference: " + err.get("message", str(err))
+
+			if "choices" not in result:
+				return "Unexpected resp: " + str(result)
+				text = result["choices"][0]["message"]["content"]
+				return text[:800]
+		except Exception:
+			continue # try next model
+
+	return "Kor don't kor no more"
 
 	except Exception as e:
 		return "Error: " + str(e)

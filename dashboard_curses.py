@@ -8,6 +8,7 @@ def get_mem():
 		lines = f.readlines()
 
 	meminfo = {}
+	
 	for line in lines:
 		parts = line.split()
 		meminfo[parts[0].rstrip(':')] = int(parts[1])
@@ -26,11 +27,11 @@ def get_uptime():
 
 def get_state(used):
 	if used < 150:
-		return "IDLE", ["-.-", "o.o"]
+		return "LURKING", ["-.-", "o.o"]
 	elif used < 300:
-		return "THINKING", [".-.", "._."]
+		return "RECONNING", [".-.", "._."]
 	else:
-		return "ALERT", ["x.x", "!!"]
+		return "COMPROMISED", ["x.x", "!!"]
 
 def safe_addstr(win, y, x, text, attr=0):
 	height, width = win.getmaxyx()
@@ -40,31 +41,31 @@ def safe_addstr(win, y, x, text, attr=0):
 		except curses.error:
 			pass
 
-def draw_box(win, y, x, h, w, title=None):
+def draw_box(win, y, x, h, w, title=None, color=0):
 	height, width = win.getmaxyx()
 
 	if y < 0 or x < 0 or y + h > height or x + w > width:
 		return
 
 	# corners
-	safe_addstr(win, y, x, "+")
-	safe_addstr(win, y, x + w - 1, "+")
-	safe_addstr(win, y + h - 1, x, "+")
-	safe_addstr(win, y + h - 1, x + w - 1, "+")
+	safe_addstr(win, y, x, "+", color)
+	safe_addstr(win, y, x + w - 1, "+", color)
+	safe_addstr(win, y + h - 1, x, "+", color)
+	safe_addstr(win, y + h - 1, x + w - 1, "+", color)
 
 	# horizontal
 	for i in range(x + 1, x + w - 1):
-		safe_addstr(win, y, i, "-")
-		safe_addstr(win, y + h - 1, i, "-")
+		safe_addstr(win, y, i, "-", color)
+		safe_addstr(win, y + h - 1, i, "-", color)
 
 	# vertical
 	for i in range(y + 1, y + h - 1):
-		safe_addstr(win, i, x, "|")
-		safe_addstr(win, i, x + w - 1, "|")
+		safe_addstr(win, i, x, "|", color)
+		safe_addstr(win, i, x + w - 1, "|", color)
 
 	if title:
 		title_text = " " + title + " "
-		safe_addstr(win, y, x + 2, title_text)
+		safe_addstr(win, y, x + 2, title_text, color)
 
 def draw_wrapped_text(stdscr, y, x, label, text, width):
 	prefix = label + ": "
@@ -103,11 +104,16 @@ def build_chat_lines(history, width):
 		lines.append("")
 	return lines
 
-def chat_mode(stdscr):
+def chat_mode(stdscr, colors):
 	history = [] # Keep chat history
 
+	PRIMARY = colors["PRIMARY"]
+	KOR = colors["KOR"]
+	ACCENT = colors["ACCENT"]
+	TEXT = colors["TEXT"]
 
 	curses.curs_set(1)
+
 	stdscr.nodelay(False)
 	stdscr.timeout(-1)
 
@@ -120,9 +126,9 @@ def chat_mode(stdscr):
 
 		draw_box(stdscr, 1, 2, height - 2, width - 4, " Chat Mode ")
 
-		safe_addstr(stdscr, 3, 4, "DevNode AI")
+		safe_addstr(stdscr, 3, 4, "[ KOR ]", KOR)
 		safe_addstr(stdscr, 5, 4, "Conversation")
-		safe_addstr(stdscr, 6, 5, "------------")
+		safe_addstr(stdscr, 6, 4, "------------")
 
 		y = 8
 
@@ -139,7 +145,13 @@ def chat_mode(stdscr):
 		y = chat_top
 
 		for line in visible_lines:
-			safe_addstr(stdscr, y, chat_x, line[:chat_w])
+			if line.startswith("You:"):
+				safe_addstr(stdscr, y, chat_x, line[:chat_w], PRIMARY)
+			elif line.startswith("AI:"):
+				safe_addstr(stdscr, y, chat_x, line[:chat_w], KOR)
+			else:
+				safe_addstr(stdscr, y, chat_x, line[:chat_w])
+
 			y += 1
 
 		safe_addstr(stdscr, height - 5, 4, "Type message. Enter to send.")
@@ -189,6 +201,31 @@ def chat_mode(stdscr):
 
 def main(stdscr):
 	curses.curs_set(0)
+
+
+	curses.start_color()
+	curses.use_default_colors()
+
+	curses.init_pair(1, curses.COLOR_CYAN, -1)
+	curses.init_pair(2, curses.COLOR_YELLOW, -1)
+	curses.init_pair(3, curses.COLOR_RED, -1)
+	curses.init_pair(4, curses.COLOR_WHITE, -1)
+	curses.init_pair(5, curses.COLOR_MAGENTA, -1)
+
+	PRIMARY = curses.color_pair(1)
+	ACCENT = curses.color_pair(2)
+	ALERT = curses.color_pair(3)
+	TEXT = curses.color_pair(4)
+	KOR = curses.color_pair(5)
+
+	colors = {
+		"PRIMARY": PRIMARY,
+		"ACCENT": ACCENT,
+		"ALERT": ALERT,
+		"TEXT": TEXT,
+		"KOR": KOR
+	}
+
 	stdscr.nodelay(True)
 	stdscr.timeout(200)
 
@@ -219,21 +256,28 @@ def main(stdscr):
 		panel_y = (height - panel_h) // 2
 
 
-		draw_box(stdscr, panel_y, panel_x, panel_h, panel_w, " DevNode ")
+		draw_box(stdscr, panel_y, panel_x, panel_h, panel_w, " [ PRAXIS ] ", PRIMARY)
 
 		# title
-		safe_addstr(stdscr, panel_y + 2, panel_x + 3, "System Status")
+		safe_addstr(stdscr, panel_y + 2, panel_x + 3, "Mission Status", ACCENT)
 
 		# info section
-		safe_addstr(stdscr, panel_y + 4, panel_x + 3, "RAM:    {} MB / {} MB".format(used, total))
-		safe_addstr(stdscr, panel_y + 5, panel_x + 3, "Uptime: {}".format(uptime))
-		safe_addstr(stdscr, panel_y + 6, panel_x + 3, "State:  {}".format(state))
+		safe_addstr(stdscr, panel_y + 4, panel_x + 3, "RAM:    {} MB / {} MB".format(used, total), TEXT)
+		safe_addstr(stdscr, panel_y + 5, panel_x + 3, "Uptime: {}".format(uptime), TEXT)
+		safe_addstr(stdscr, panel_y + 6, panel_x + 3, "Mode:  {}".format(state), TEXT)
 
 		# face box
 		face_box_y = panel_y + 8
 		face_box_x = panel_x + 3
 		face_box_w = panel_w - 6
 		face_box_h = 5
+
+		if state == "LURKING":
+			state_color = PRIMARY
+		elif state == "SCANNING":
+			state_color = ACCENT
+		else:
+			state_color = ALERT
 
 
 		draw_box(stdscr, face_box_y, face_box_x, face_box_h, face_box_w, " Face ")
@@ -251,7 +295,7 @@ def main(stdscr):
 		if key == ord('q'):
 			break
 		elif key == ord('c'):
-			chat_mode(stdscr)
+			chat_mode(stdscr, colors)
 
 		time.sleep(1)
 
