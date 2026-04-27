@@ -45,10 +45,9 @@ def ask_ai(prompt):
 				return "Unexpected resp: " + str(result)
 				text = result["choices"][0]["message"]["content"]
 				return text[:800]
+			return "Unexpected resp: " + str(result)
 		except Exception:
 			continue # try next model
 
 	return "Kor don't kor no more"
 
-	except Exception as e:
-		return "Error: " + str(e)
