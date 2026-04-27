@@ -33,6 +33,11 @@ def ask_ai(prompt):
 			response = requests.post(url, headers=headers, data=json.dumps(data))
 			result = response.json()
 
+			if "choices" in result:
+				text = result["choices"][0]["message"]["content"]
+				return text[:800]
+
+
 			if "error" in result:
 				err = result["error"]
 
@@ -41,10 +46,6 @@ def ask_ai(prompt):
 
 				return "Kor intercepted interference: " + err.get("message", str(err))
 
-			if "choices" not in result:
-				return "Unexpected resp: " + str(result)
-				text = result["choices"][0]["message"]["content"]
-				return text[:800]
 			return "Unexpected resp: " + str(result)
 		except Exception:
 			continue # try next model
