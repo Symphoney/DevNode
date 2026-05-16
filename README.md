@@ -55,3 +55,54 @@ Python (logic / monitor) -> C++ (hardware control layer) -> GPIO (physical) -> L
 - Added bordered layout to dashboard
 - Introduced face section for state visualization and made it animated
 
+## PRAXIS Cyberdeck GUI (Pi Kiosk)
+
+`praxis_gui.py` now runs a fullscreen cyberdeck HUD suitable for 800x480 Raspberry Pi displays.
+
+### Features
+- Fullscreen kiosk by default (press `Esc` or `Ctrl+Q` to exit)
+- KOR chat panel backed by OpenRouter (`OPENROUTER_API_KEY`)
+- Live RAM / CPU / uptime telemetry with state modes
+- Branding sigil support: `spider`, `raccoon`, or `sly`
+
+### Run Manually
+```bash
+python3 praxis_gui.py --windowed
+python3 praxis_gui.py --sigil raccoon
+```
+
+### Boot Into PRAXIS On Raspberry Pi
+1. Copy project to your Pi (example target path `/home/pi/DevNode`).
+2. Make launcher executable:
+```bash
+cd /home/pi/DevNode
+chmod +x launch_praxis.sh
+```
+3. Install the systemd service:
+```bash
+sudo cp deploy/praxis-kiosk.service /etc/systemd/system/praxis-kiosk.service
+```
+4. Edit paths/user if needed:
+```bash
+sudo nano /etc/systemd/system/praxis-kiosk.service
+```
+5. Enable and start:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable praxis-kiosk.service
+sudo systemctl start praxis-kiosk.service
+```
+6. Optional sigil swap:
+```bash
+sudo systemctl edit praxis-kiosk.service
+```
+Add:
+```ini
+[Service]
+Environment=PRAXIS_SIGIL=raccoon
+```
+Then restart:
+```bash
+sudo systemctl restart praxis-kiosk.service
+```
+

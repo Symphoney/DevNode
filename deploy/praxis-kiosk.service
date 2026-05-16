@@ -1,0 +1,18 @@
+[Unit]
+Description=PRAXIS Kiosk Frontend
+After=graphical.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/DevNode
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+Environment=PRAXIS_SIGIL=spider
+ExecStart=/home/pi/DevNode/launch_praxis.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target
