@@ -112,6 +112,7 @@ class PraxisGui:
 
     def enable_kiosk(self):
         self.root.attributes("-fullscreen", True)
+        self.root.config(cursor="none")
 
     def exit_app(self, _event=None):
         self.root.destroy()
