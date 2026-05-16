@@ -83,7 +83,7 @@ def get_uptime():
     minutes = int(uptime_seconds / 60)
     hours = minutes // 60
     mins = minutes % 60
-    return f"{hours:02d}:{mins:02d}"
+    return "{:02d}:{:02d}".format(hours, mins)
 
 
 def get_mode(ram_percent, cpu_percent):
@@ -140,7 +140,7 @@ class PraxisGui:
 
         subtitle = tk.Label(
             self.root,
-            text=f"SIGIL: {self.sigil_name.upper()}  |  ESC to exit kiosk",
+            text="SIGIL: {}  |  ESC to exit kiosk".format(self.sigil_name.upper()),
             font=("Courier", 10),
             fg=PALETTE["muted"],
             bg=PALETTE["bg"],
@@ -258,11 +258,11 @@ class PraxisGui:
         mode, eyes = get_mode(ram_percent, cpu_percent)
 
         self.clock_label.config(text=time.strftime("%H:%M:%S"))
-        self.ram_label.config(text=f"RAM: {used} MB / {total} MB  ({ram_percent}%)")
-        self.cpu_label.config(text=f"CPU: {cpu_percent}%")
-        self.uptime_label.config(text=f"UPTIME: {uptime}")
-        self.mode_label.config(text=f"MODE: {mode}")
-        self.face_label.config(text=f"[ {eyes} ]")
+        self.ram_label.config(text="RAM: {} MB / {} MB  ({}%)".format(used, total, ram_percent))
+        self.cpu_label.config(text="CPU: {}%".format(cpu_percent))
+        self.uptime_label.config(text="UPTIME: {}".format(uptime))
+        self.mode_label.config(text="MODE: {}".format(mode))
+        self.face_label.config(text="[ {} ]".format(eyes))
 
         if mode == "COMBAT":
             self.mode_label.config(fg=PALETTE["danger"])
@@ -281,7 +281,7 @@ class PraxisGui:
         if not prompt:
             return
 
-        self.chat_log.insert("end", f"YOU: {prompt}\n")
+        self.chat_log.insert("end", "YOU: {}\n".format(prompt))
         self.input_box.delete(0, "end")
         self.chat_log.insert("end", "KOR: Contemplating...\n")
         self.chat_log.see("end")
@@ -289,7 +289,7 @@ class PraxisGui:
 
         response = ask_ai(prompt)
         self.chat_log.delete("end-2l", "end-1l")
-        self.chat_log.insert("end", f"KOR: {response}\n\n")
+        self.chat_log.insert("end", "KOR: {}\n\n".format(response))
         self.chat_log.see("end")
 
 
