@@ -20,14 +20,14 @@ PALETTE = {
 
 SIGILS = {
     "spider": [
-        r"      /\  /\      ",
-        r"  ___/  \/  \___  ",
-        r" /  _  /\  /  _  \ ",
-        r" | /_\/_ \/ _\/_\ | ",
-        r" | \__/  ||  \__/ | ",
-        r"  \_____/  \_____/  ",
-        r"    /  / __ \  \    ",
-        r"   /__/ /  \ \__\   ",
+    r"      .::##::..       ",
+    r"   .:::/\||/\\:::.     ",
+    r"  ::../--++--\\..::    ",
+    r" ::../  /||\\  \\..::   ",
+    r" ##==--< || >--==##    ",
+    r" ::..\\  \\||/  //..::   ",
+    r"  ::..\\--++--//..::    ",
+    r"    ':::\\/||\\/:::'     ",
     ],
     "raccoon": [
         r"   ___  ____  ___   ",
@@ -48,6 +48,22 @@ SIGILS = {
         r" / /  / __ \ / /     ",
         r"/ /__/ /_/ // /__    ",
         r"\____/\____/\____/   ",
+    ],
+}
+
+SIGIL_ANIMATIONS = {
+    "spider": [
+        SIGILS["spider"],
+        [
+            r"      .:##::..:.       ",
+            r"   .:::\\||//\\:::.     ",
+            r"  ::..\\--++--/..::     ",
+            r" ::../  //||\\  \\..::   ",
+            r" ##==-<  ||  >-==##      ",
+            r" ::..\\  //||\\  /..::    ",
+            r"  ::..\\--++--//..::      ",
+            r"    ':::/\\||/\\:::'      ",
+        ],
     ],
 }
 
@@ -99,6 +115,8 @@ class PraxisGui:
         self.root = root
         self.sigil_name = sigil_name if sigil_name in SIGILS else "spider"
         self.cpu_prev = get_cpu_percent()
+        self.sigil_frames = SIGIL_ANIMATIONS.get(self.sigil_name, [SIGILS[self.sigil_name]])
+        self.sigil_frame_idx = 0
 
         self.root.title("PRAXIS // KOR")
         self.root.geometry("800x480")
@@ -164,7 +182,7 @@ class PraxisGui:
             bg=PALETTE["panel"],
         ).pack(anchor="w", padx=16, pady=(14, 8))
 
-        sigil_block = "\n".join(SIGILS[self.sigil_name])
+        sigil_block = "\n".join(self.sigil_frames[0])
         self.sigil = tk.Label(
             left,
             text=sigil_block,
@@ -274,6 +292,14 @@ class PraxisGui:
         else:
             self.mode_label.config(fg=PALETTE["cyan"])
             self.face_label.config(fg=PALETTE["cyan"])
+
+        if len(self.sigil_frames) > 1:
+            self.sigil_frame_idx = (self.sigil_frame_idx + 1) % len(self.sigil_frames)
+            self.sigil.config(text="\n".join(self.sigil_frames[self.sigil_frame_idx]))
+            if self.sigil_frame_idx == 0:
+                self.sigil.config(fg=PALETTE["magenta"])
+            else:
+                self.sigil.config(fg=PALETTE["cyan"])
 
         self.root.after(1200, self.update_dashboard)
 
